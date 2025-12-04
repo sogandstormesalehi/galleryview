@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WikiArt Local Slideshow</title>
+
+<style>
+  body {
+    margin: 0;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  #artImage {
+    max-width: 50vw;
+    max-height: 50vh;
+    object-fit: contain;
+    display: none;
+  }
+
+  #blackScreen {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: black;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<img id="artImage" />
+<div id="blackScreen"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
