@@ -81,13 +81,14 @@ async function slideshow() {
         img.style.display = "block";
         black.style.display = "none";
 
-        await wait(8000);
+        await wait(12000);
 
         img.style.display = "none";
         black.style.display = "block";
 
-        await wait(5000);
+        await wait(6000);
     }
 }
 
 slideshow();
+
