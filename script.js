@@ -1,94 +1,80 @@
 const img = document.getElementById("artImage");
 const black = document.getElementById("blackScreen");
 
-// Paste your Sheets endpoint here
+
 const LOG_URL = "https://script.google.com/macros/s/AKfycby3KBeO_6jL19J9sNul7sXJtFTC-nbfIv55H3wcD1zyuI80Jwe5x71FBrPCYrzGKhezLg/exec";
 
-let objectIDs = [];
-let queue = []; // preload queue of artworks
+const MANIFEST_URL = "https://script.google.com/macros/s/AKfycbymCopYuNlDwnA8BlczBZLhXuE5VM8G1V5IiNeha8kMyQUCjheUFcYIi1lBmQ1Dasg1kQ/exec";
+
 const PRELOAD_COUNT = 10;
 
+let images = [];
+let queue = [];
+let index = 0;
+
 function wait(ms) {
-    return new Promise(res => setTimeout(res, ms));
+  return new Promise(res => setTimeout(res, ms));
 }
 
-// Load all MET IDs
-async function loadObjectIDs() {
-    const res = await fetch("https://collectionapi.metmuseum.org/public/collection/v1/objects");
-    const json = await res.json();
-    objectIDs = json.objectIDs;
+// Load manifest once
+async function loadManifest() {
+  const res = await fetch(MANIFEST_URL);
+  images = await res.json();
 }
 
-async function fetchArtwork() {
-    while (true) {
-        const id = objectIDs[Math.floor(Math.random() * objectIDs.length)];
-        const res = await fetch(`https://collectionapi.metmuseum.org/public/collection/v1/objects/${id}`);
-        const data = await res.json();
-
-        if (data.primaryImage && data.primaryImage !== "") {
-            return {
-                id: data.objectID,
-                title: data.title,
-                artist: data.artistDisplayName,
-                year: data.objectDate,
-                image: data.primaryImage
-            };
-        }
-    }
-}
-
+// Logging
 function logToSheet(entry) {
-    if (!LOG_URL) return;
-
-    fetch("https://corsproxy.io/?" + encodeURIComponent(LOG_URL), {
+  fetch("https://corsproxy.io/?" + encodeURIComponent(LOG_URL), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-        time: new Date().toISOString(),
-        ...entry
+      time: new Date().toISOString(),
+      ...entry
     })
-})
+  });
 }
 
+// Preload images
 async function preloadImages(count = 1) {
-    for (let i = 0; i < count; i++) {
-        const art = await fetchArtwork();
+  for (let i = 0; i < count; i++) {
+    const art = images[index % images.length];
 
-        // preload image element
-        const preImg = new Image();
-        preImg.src = art.image;
+    const preImg = new Image();
+    preImg.src = art.url;
 
-        queue.push(art);
-    }
+    queue.push({
+      id: art.name,
+      image: art.url
+    });
+
+    index++;
+  }
 }
 
 async function slideshow() {
-    await loadObjectIDs();
+  await loadManifest();
 
-    console.log("Preloading first 10 images...");
-    await preloadImages(PRELOAD_COUNT);
+  console.log("Preloading first 10 images...");
+  await preloadImages(PRELOAD_COUNT);
 
-    while (true) {
-        // Take first preloaded item
-        const art = queue.shift();
+  while (true) {
+    const art = queue.shift();
 
-        // Start preloading next one immediately
-        preloadImages(1);
+    preloadImages(1);
 
-        logToSheet(art);
+    logToSheet(art);
 
-        img.src = art.image;
-        img.style.display = "block";
-        black.style.display = "none";
+    img.src = art.image;
+    img.style.display = "block";
+    black.style.display = "none";
 
-        await wait(12000);
+    await wait(4000); // IMAGE — 4s
 
-        img.style.display = "none";
-        black.style.display = "block";
+    img.style.display = "none";
+    black.style.display = "block";
 
-        await wait(6000);
-    }
+    await wait(3000); // BLACK — 3s
+  }
 }
 
 slideshow();
-
