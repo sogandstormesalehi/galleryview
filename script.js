@@ -10,7 +10,7 @@ const PRELOAD_COUNT = 10;
 
 let images = [];
 let queue = [];
-let index = 401;
+let index = 476;
 
 function wait(ms) {
   return new Promise(res => setTimeout(res, ms));
@@ -68,16 +68,17 @@ async function slideshow() {
     img.style.display = "block";
     black.style.display = "none";
 
-    await wait(5000); 
+    await wait(4000); 
 
     img.style.display = "none";
     black.style.display = "block";
 
-    await wait(3000);
+    await wait(2500);
   }
 }
 
 slideshow();
+
 
 
 
